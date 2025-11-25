@@ -2,15 +2,38 @@
 
 A new Flutter project.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+**Project Structure**
 
-A few resources to get you started if this is your first Flutter project:
+- **`lib/`**: Dart ソースコード
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```
+lib/
+├── main.dart
+├── screens/
+│   ├── home/
+│   │   ├── home_screen.dart
+│   │   ├── home_viewmodel.dart
+│   │   └── widgets/
+│   │       └── home_appbar.dart
+│   ├── camera/
+│   │   ├── camera_screen.dart
+│   │   ├── camera_viewmodel.dart
+│   │   └── widgets/
+│   │       └── camera_preview.dart
+│   └── setting/
+│       ├── setting_screen.dart
+│       └── setting_viewmodel.dart
+└── widgets/
+    └── common_button.dart
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **`android/`**: Android ネイティブプロジェクト（Gradle）
+- **`ios/`**: iOS ネイティブプロジェクト（Xcode）
+- **`test/`**: Dart/Flutter のテスト
+
+**Screen-first の Flutter ディレクトリ構成**
+
+アプリケーションの各画面（スクリーン）をトップレベルのディレクトリとして、その配下に画面固有のコード（UI、ViewModel／Model、画面用ウィジェットなど）をまとめる構成です。画面ごとに関連コードがまとまり、画面単位での開発・レビュー・テストがしやすくなるため、小〜中規模アプリで特に有効です。
+
+ただし、共通コンポーネントやユーティリティを横断的に変更する必要がある場合、複数のスクリーンディレクトリを変更しなければならず、大規模なコードベースでは管理が煩雑になる可能性があります。
