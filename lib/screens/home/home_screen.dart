@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../camera/camera_screen.dart';
 import '../setting/setting_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -26,6 +27,14 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.camera_alt),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const CameraScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
