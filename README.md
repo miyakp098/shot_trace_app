@@ -65,3 +65,27 @@ flutter devices
 ```bash
 flutter run -d chrome
 ```
+
+**実機テスト (iOS / Android)**
+
+プロジェクトルートで以下を実行して接続済みのデバイスを検出し、取得したデバイスIDを使って実機でアプリを起動します。`flutter` は環境の PATH にあるコマンドを使用してください（絶対パスは不要です）。
+
+- 1) デバイス一覧を JSON 形式で確認（`--machine`）:
+
+```zsh
+# プロジェクトルートで実行
+flutter devices --machine
+```
+出力された JSON の中の `id` がデバイス識別子です。手動でコピーして利用してください（例: `00000000-0001111CCCCEEEEE`）
+
+- 2) 手動で実行する例:
+
+```zsh
+# 例: 上のコマンドで得たデバイスIDを使う
+flutter run -d 00000000-0001111CCCCEEEEE -v
+```
+
+注意事項:
+- iOS 実機で実行する場合は、デバイスの画面ロックを解除し、信頼設定が済んでいることを確認してください。
+- 初回は Xcode のコマンドラインツールと初期設定（`xcode-select` や `xcodebuild -runFirstLaunch`）が必要になる場合があります。
+- `flutter` コマンドが PATH に無い場合は PATH 設定を行ってください（README 内では絶対パスを直接書かないことを推奨します）。
