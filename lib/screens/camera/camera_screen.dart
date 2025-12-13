@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -11,7 +12,8 @@ class CameraScreen extends StatefulWidget {
   State<CameraScreen> createState() => _CameraScreenState();
 }
 
-class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver {
+class _CameraScreenState extends State<CameraScreen>
+    with WidgetsBindingObserver {
   late CameraController _controller;
   final Completer<bool> _cameraLoaded = Completer<bool>();
   bool _isZooming = false;
@@ -30,7 +32,9 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       final cameras = await availableCameras();
       final back = cameras.firstWhere(
         (c) => c.lensDirection == CameraLensDirection.back,
-        orElse: () => cameras.isNotEmpty ? cameras.first : throw StateError('No cameras available'),
+        orElse: () => cameras.isNotEmpty
+            ? cameras.first
+            : throw StateError('No cameras available'),
       );
 
       _controller = CameraController(
@@ -49,6 +53,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
           showDialog<void>(
             context: context,
             builder: (context) => const AlertDialog(
+              title: Text('権限が必要です'),
               content: Text('カメラへのアクセスが許可されていません。設定から許可してください。'),
             ),
           );
@@ -89,10 +94,34 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       setState(() {
         _imageFile = File(image.path);
       });
+      // Save captured image to photo gallery using gallery_saver
+      try {
+        final bool? result = await GallerySaver.saveImage(
+          image.path,
+          albumName: 'Shot Trace App',
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result == true ? '保存しました: ギャラリー' : 'ギャラリーへの保存に失敗しました',
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('ギャラリー保存中にエラーが発生しました')));
+        }
+      }
       await Future.delayed(const Duration(seconds: 3));
       if (mounted) setState(() => _imageFile = null);
     } on CameraException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('撮影失敗: ${e.code}')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('撮影失敗: ${e.code}')));
     } finally {
       if (mounted) setState(() => _isTakingPicture = false);
     }
@@ -142,7 +171,8 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                   ),
                   Center(
                     child: ElevatedButton(
-                      onPressed: (!_cameraLoaded.isCompleted || _isTakingPicture)
+                      onPressed:
+                          (!_cameraLoaded.isCompleted || _isTakingPicture)
                           ? null
                           : () => onTakePicture(context),
                       child: const Text('撮影'),
