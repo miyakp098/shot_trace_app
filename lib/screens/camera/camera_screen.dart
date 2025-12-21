@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -151,7 +152,27 @@ class _CameraScreenState extends State<CameraScreen>
                   } else if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  return CameraPreview(_controller);
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Stack(
+                        children: [
+                          Positioned.fill(child: CameraPreview(_controller)),
+                          Center(
+                            child: SizedBox(
+                              width: constraints.maxWidth * 0.25,
+                              height: constraints.maxWidth * 0.25,
+                              child: IgnorePointer(
+                                child: SvgPicture.asset(
+                                  'assets/overlays/svg/ball.svg',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
               ),
             ),

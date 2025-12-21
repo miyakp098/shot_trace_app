@@ -15,21 +15,21 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
+        // ここではアプリのテーマを定義しています。
         //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
+        // 試してみてください: ターミナルで `flutter run` を実行すると
+        // アプリが起動してツールバーが表示されます。アプリを終了せずに
+        // 下の colorScheme の `seedColor` を `Colors.green` に変更して、
+        // ホットリロードを行ってください（保存するか、Flutter 対応の
+        // IDE のホットリロードボタン、またはコマンドラインで開始した場
+        // 合は `r` を押します）。
         //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
+        // カウンタがゼロに戻っていないことに注意してください — ホット
+        // リロードではアプリの状態は保持されます。状態をリセットしたい
+        // 場合はホットリスタートを使ってください。
         //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
+        // この仕組みは値の変更だけでなくコード変更にも有効です: ほとんど
+        // のコード変更はホットリロードだけで動作確認できます。
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: const HomeScreen(title: 'Flutter Demo Home Page'),
