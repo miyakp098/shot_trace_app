@@ -17,7 +17,6 @@ class _CameraScreenState extends State<CameraScreen>
     with WidgetsBindingObserver {
   late CameraController _controller;
   final Completer<bool> _cameraLoaded = Completer<bool>();
-  bool _isZooming = false;
   bool _isRecording = false;
   String? _videoPath;
 
@@ -99,28 +98,31 @@ class _CameraScreenState extends State<CameraScreen>
         if (mounted) setState(() => _isRecording = false);
         _videoPath = file.path;
         try {
-          final bool? result = await GallerySaver.saveVideo(file.path, albumName: 'Shot Trace App');
+          final bool? result = await GallerySaver.saveVideo(
+            file.path,
+            albumName: 'Shot Trace App',
+          );
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(result == true ? '動画を保存しました' : '動画の保存に失敗しました')),
+              SnackBar(
+                content: Text(result == true ? '動画を保存しました' : '動画の保存に失敗しました'),
+              ),
             );
           }
         } catch (e) {
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('動画保存中にエラーが発生しました')));
+          if (mounted)
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('動画保存中にエラーが発生しました')));
         }
       }
     } on CameraException catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('録画エラー: ${e.code}')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('録画エラー: ${e.code}')));
       if (mounted) setState(() => _isRecording = false);
     }
-  }
-
-  void zoomingChanged(bool? value) {
-    if (value == null) return;
-    setState(() {
-      _isZooming = value;
-    });
-    _controller.setZoomLevel(_isZooming ? 2.0 : 1.0).catchError((_) {});
   }
 
   @override
@@ -170,17 +172,12 @@ class _CameraScreenState extends State<CameraScreen>
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Stack(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      const SizedBox(width: 16),
-                      const Text('2倍ズーム'),
-                      Switch(value: _isZooming, onChanged: zoomingChanged),
-                    ],
-                  ),
+                  // Zoom control removed for now; will implement later.
                   Center(
                     child: ElevatedButton(
-                      onPressed: (!_cameraLoaded.isCompleted) ? null : () => _toggleVideoRecording(context),
+                      onPressed: (!_cameraLoaded.isCompleted)
+                          ? null
+                          : () => _toggleVideoRecording(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _isRecording ? Colors.red : null,
                       ),
