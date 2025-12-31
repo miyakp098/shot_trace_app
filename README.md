@@ -1,9 +1,8 @@
 # shot_trace_app
 
-A new Flutter project.
+スマートフォンでオーバーレイに合わせてシュートの動画を撮影します。撮影した動画をバスケ解析APIに送信し、解析結果をアプリ画面に表示します。
 
-
-**Project Structure**
+**ディレクトリ構成**
 
 - **`lib/`**: Dart ソースコード
 
@@ -32,7 +31,7 @@ lib/
 - **`ios/`**: iOS ネイティブプロジェクト（Xcode）
 - **`test/`**: Dart/Flutter のテスト
 
-**Screen-first の Flutter ディレクトリ構成**
+**ディレクトリ構成思想：Screen-first**
 
 アプリケーションの各画面（スクリーン）をトップレベルのディレクトリとして、その配下に画面固有のコード（UI、ViewModel／Model、画面用ウィジェットなど）をまとめる構成です。画面ごとに関連コードがまとまり、画面単位での開発・レビュー・テストがしやすくなるため、小〜中規模アプリで特に有効です。
 
@@ -85,7 +84,21 @@ flutter devices --machine
 flutter run -d 00000000-0001111CCCCEEEEE -v
 ```
 
+リリースビルド
+
+```zsh
+flutter run --release
+```
+
+
 注意事項:
 - iOS 実機で実行する場合は、デバイスの画面ロックを解除し、信頼設定が済んでいることを確認してください。
 - 初回は Xcode のコマンドラインツールと初期設定（`xcode-select` や `xcodebuild -runFirstLaunch`）が必要になる場合があります。
 - `flutter` コマンドが PATH に無い場合は PATH 設定を行ってください（README 内では絶対パスを直接書かないことを推奨します）。
+
+**iOS: CocoaPods のインストール（必要な場合）**
+
+```zsh
+cd ios
+pod install --repo-update
+```

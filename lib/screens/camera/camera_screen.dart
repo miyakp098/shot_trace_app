@@ -18,8 +18,8 @@ class _CameraScreenState extends State<CameraScreen>
   late CameraController _controller;
   final Completer<bool> _cameraLoaded = Completer<bool>();
   bool _isZooming = false;
-  bool _isTakingPicture = false;
-  File? _imageFile;
+  bool _isRecording = false;
+  String? _videoPath;
 
   @override
   void initState() {
@@ -41,7 +41,7 @@ class _CameraScreenState extends State<CameraScreen>
       _controller = CameraController(
         back,
         ResolutionPreset.medium,
-        enableAudio: false,
+        enableAudio: true,
       );
 
       await _controller.initialize();
@@ -86,45 +86,32 @@ class _CameraScreenState extends State<CameraScreen>
     }
   }
 
-  Future<void> onTakePicture(BuildContext context) async {
+  // 画像撮影は行わず、録画トグルを提供します
+  Future<void> _toggleVideoRecording(BuildContext context) async {
+    if (!_cameraLoaded.isCompleted) return;
     try {
-      setState(() {
-        _isTakingPicture = true;
-      });
-      final XFile image = await _controller.takePicture();
-      setState(() {
-        _imageFile = File(image.path);
-      });
-      // Save captured image to photo gallery using gallery_saver
-      try {
-        final bool? result = await GallerySaver.saveImage(
-          image.path,
-          albumName: 'Shot Trace App',
-        );
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                result == true ? '保存しました: ギャラリー' : 'ギャラリーへの保存に失敗しました',
-              ),
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('ギャラリー保存中にエラーが発生しました')));
+      if (!_isRecording) {
+        await _controller.prepareForVideoRecording();
+        await _controller.startVideoRecording();
+        if (mounted) setState(() => _isRecording = true);
+      } else {
+        final XFile file = await _controller.stopVideoRecording();
+        if (mounted) setState(() => _isRecording = false);
+        _videoPath = file.path;
+        try {
+          final bool? result = await GallerySaver.saveVideo(file.path, albumName: 'Shot Trace App');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(result == true ? '動画を保存しました' : '動画の保存に失敗しました')),
+            );
+          }
+        } catch (e) {
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('動画保存中にエラーが発生しました')));
         }
       }
-      await Future.delayed(const Duration(seconds: 3));
-      if (mounted) setState(() => _imageFile = null);
     } on CameraException catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('撮影失敗: ${e.code}')));
-    } finally {
-      if (mounted) setState(() => _isTakingPicture = false);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('録画エラー: ${e.code}')));
+      if (mounted) setState(() => _isRecording = false);
     }
   }
 
@@ -159,6 +146,7 @@ class _CameraScreenState extends State<CameraScreen>
                           Positioned.fill(child: CameraPreview(_controller)),
                           Center(
                             child: SizedBox(
+                              // TODO: オーバーレイ画像のサイズを後で調整する
                               width: constraints.maxWidth * 0.25,
                               height: constraints.maxWidth * 0.25,
                               child: IgnorePointer(
@@ -192,21 +180,17 @@ class _CameraScreenState extends State<CameraScreen>
                   ),
                   Center(
                     child: ElevatedButton(
-                      onPressed:
-                          (!_cameraLoaded.isCompleted || _isTakingPicture)
-                          ? null
-                          : () => onTakePicture(context),
-                      child: const Text('撮影'),
+                      onPressed: (!_cameraLoaded.isCompleted) ? null : () => _toggleVideoRecording(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isRecording ? Colors.red : null,
+                      ),
+                      child: Text(_isRecording ? '録画停止' : '録画開始'),
                     ),
                   ),
                 ],
               ),
             ),
-            if (_imageFile != null)
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Image.file(_imageFile!),
-              ),
+            // 画像プレビューは無効（動画専用のため）
           ],
         ),
       ),
