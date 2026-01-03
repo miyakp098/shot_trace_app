@@ -102,3 +102,37 @@ flutter run --release
 cd ios
 pod install --repo-update
 ```
+windows インストール方法
+
+0. flutterのセットアップ
+以下のリンクのWindowsのfulutterのインストールと設定を参照
+https://docs.flutter.dev/get-started/quick
+
+1. 必要な設定（初回のみ）:
+
+```bash
+flutter config --enable-web
+```
+
+2. 開発者モードをON
+
+```bash
+start ms-settings:developers
+```
+
+3. 依存関係を取得:
+
+```bash
+flutter pub get
+```
+
+4. 利用可能なデバイスを確認（Chrome が一覧にあることを確認）:
+
+```bash
+flutter devices
+```
+
+5. Chrome で起動:
+
+```bash
+flutter run -d chrome
