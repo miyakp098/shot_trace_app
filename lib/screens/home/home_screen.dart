@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../camera/camera_screen.dart';
 import '../setting/setting_screen.dart';
+import '../analysis/analysis_result_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.title});
@@ -32,6 +33,15 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const CameraScreen()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.analytics),
+            tooltip: '分析結果',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AnalysisResultScreen()),
               );
             },
           ),
