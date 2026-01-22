@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       title: 'Shot Trace App',
       theme: ThemeData(
         // アプリのテーマを定義
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 23, 172, 80)),
       ),
       home: const HomeScreen(title: 'Shot Trace App'),
     );
