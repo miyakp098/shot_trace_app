@@ -15,7 +15,7 @@ void main() {
     await tester.pumpWidget(const MyApp());
 
     // AppBar タイトルが表示されることを確認
-    expect(find.text('Flutter Demo Home Page'), findsOneWidget);
+    expect(find.text('Shot Trace App'), findsOneWidget);
 
     // カウント用の+ボタンが存在しないことを確認
     expect(find.byIcon(Icons.add), findsNothing);
