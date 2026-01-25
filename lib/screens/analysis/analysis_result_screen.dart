@@ -47,6 +47,7 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
             return Center(child: Text('読み込みエラー: ${snapshot.error}'));
           }
           final summary = snapshot.data!;
+          final media = MediaQuery.of(context);
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -61,11 +62,35 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Expanded(
-                  child: ParabolaGraph(shots: summary.shots),
+                // グラフは固定（スクロールさせない）
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    // 画面幅に合わせつつ、縦が厳しい端末では高さを抑える
+                    final maxByWidth = constraints.maxWidth;
+                    final maxByHeight = media.size.height * 0.50;
+                    final side = math.min(maxByWidth, maxByHeight);
+
+                    return Align(
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        width: side,
+                        height: side,
+                        child: ParabolaGraph(shots: summary.shots),
+                      ),
+                    );
+                  },
                 ),
-                const SizedBox(height: 16),
-                _StatsRow(summary: summary),
+                const SizedBox(height: 12),
+                // 統計は下部だけスクロール
+                Expanded(
+                  child: SafeArea(
+                    top: false,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _StatsRow(summary: summary),
+                    ),
+                  ),
+                ),
               ],
             ),
           );
