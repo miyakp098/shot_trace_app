@@ -50,6 +50,7 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 // Legend
                 Row(
@@ -64,8 +65,10 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final side = math.min(constraints.maxWidth, constraints.maxHeight);
-                      return Center(
+                      final maxGraphHeight = constraints.maxHeight * 0.48;
+                      final side = math.min(constraints.maxWidth, maxGraphHeight);
+                      return Align(
+                        alignment: Alignment.topCenter,
                         child: SizedBox(
                           width: side,
                           height: side,
@@ -145,36 +148,83 @@ class _ParabolaPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final bgPaint = Paint()
-      ..color = Colors.grey.shade300
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    // Draw ground/base line
-    final groundY = size.height - 24;
-    canvas.drawLine(Offset(24, groundY), Offset(size.width - 12, groundY), bgPaint);
-
-    if (shots.isEmpty) return;
-
-    // Determine scaling based on max distance and peak height (derived from angle)
-    final maxD = shots.map((s) => s.shotDistance).reduce(math.max);
-    final peakHeights = shots.map((s) => _peakHeightFor(s));
-    final maxH = peakHeights.reduce(math.max);
-
-    // Margins
+    // 定数・スケール値を先頭で定義
     const left = 24.0;
     const right = 12.0;
     const top = 16.0;
+    const fixedMaxD = 9.0;
+    const fixedMaxH = 9.0;
+    final maxH = fixedMaxH;
+    final groundY = size.height - 24;
     final widthUsable = size.width - left - right;
     final heightUsable = groundY - top;
+    final kx = widthUsable / fixedMaxD;
+    final ky = heightUsable / (maxH == 0 ? 1 : maxH);
 
-    // Scale factors to fit all parabolas
-    final kx = widthUsable / maxD; // meters -> px
-    final ky = heightUsable / (maxH == 0 ? 1 : maxH); // meters -> px
+    // --- x軸・y軸の太線 ---
+    final axisPaint = Paint()
+      ..color = Colors.grey.shade700
+      ..strokeWidth = 2;
+    // x軸（y=0）
+    canvas.drawLine(Offset(left, groundY), Offset(size.width - right, groundY), axisPaint);
+    // y軸（x=0）
+    canvas.drawLine(Offset(left, groundY), Offset(left, top), axisPaint);
+
+      final bgPaint = Paint()
+        ..color = Colors.grey.shade300
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1;
+
+      // Draw ground/base line
+      canvas.drawLine(Offset(left, groundY), Offset(size.width - right, groundY), bgPaint);
+
+    // --- グラフ内グリッド線（m単位） ---
+    final gridPaint = Paint()
+      ..color = Colors.grey.shade300
+      ..strokeWidth = 1;
+    // 横グリッド（高さ方向）
+    for (int m = 1; m < maxH; m++) {
+      final y = groundY - m * ky;
+      canvas.drawLine(Offset(left, y), Offset(size.width - right, y), gridPaint);
+    }
+    // 縦グリッド（距離方向）
+    for (int m = 1; m < fixedMaxD; m++) {
+      final x = left + m * kx;
+      canvas.drawLine(Offset(x, groundY), Offset(x, top), gridPaint);
+    }
+
+    // --- 横軸目盛り（1mごと） ---
+    final tickPaint = Paint()
+      ..color = Colors.grey.shade500
+      ..strokeWidth = 1;
+    final textStyle = TextStyle(color: Colors.grey[700], fontSize: 10);
+    for (int m = 0; m <= fixedMaxD; m++) {
+      final x = left + m * kx;
+      canvas.drawLine(Offset(x, groundY), Offset(x, groundY + 6), tickPaint);
+      final tp = TextPainter(
+        text: TextSpan(text: '$m', style: textStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, Offset(x - tp.width / 2, groundY + 8));
+    }
+
+    // --- 縦軸目盛り（1mごと） ---
+    for (int m = 1; m <= maxH; m++) {
+      final y = groundY - m * ky;
+      canvas.drawLine(Offset(left - 6, y), Offset(left, y), tickPaint);
+      final tp = TextPainter(
+        text: TextSpan(text: '$m', style: textStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, Offset(left - tp.width - 10, y - tp.height / 2));
+    }
+
+    if (shots.isEmpty) return;
 
     for (final s in shots) {
       final path = Path();
-      final d = s.shotDistance;
+      // 横軸9mに合わせてスケーリング
+      final d = s.shotDistance > fixedMaxD ? fixedMaxD : s.shotDistance;
       final h = _peakHeightFor(s);
       final color = s.made ? Colors.green : Colors.red;
       final p = Paint()
