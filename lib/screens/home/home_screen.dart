@@ -38,6 +38,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 32),
             _HomeMenuButton(
+              icon: Icons.movie,
+              label: '動画分析',
+              description: '動画を分析する',
+              onTap: () {
+                // TODO: 動画分析画面への遷移を実装
+                // 推移後内容: 写真ライブラリにある動画を選択して、APIに送信する
+                // 送信については非同期で行いたい
+              },
+            ),
+            const SizedBox(height: 32),
+            _HomeMenuButton(
               icon: Icons.analytics,
               label: '分析結果',
               description: 'シュート動画の分析結果を表示',
