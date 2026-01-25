@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'widgets/parabola_graph.dart';
+import 'widgets/stats_row.dart';
+import 'package:shot_trace_app/models/shot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -87,7 +89,7 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
                     top: false,
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.only(bottom: 8),
-                      child: _StatsRow(summary: summary),
+                      child: StatsRow(summary: summary),
                     ),
                   ),
                 ),
@@ -100,113 +102,6 @@ class _AnalysisResultScreenState extends State<AnalysisResultScreen> {
   }
 }
 
-class ShotSummary {
-  ShotSummary({required this.shots});
-
-  final List<Shot> shots;
-
-  int get total => shots.length;
-
-  int get madeCount => shots.where((s) => s.made).length;
-
-  double get successRate => total == 0 ? 0 : madeCount / total;
-
-  double get averageAngle => total == 0
-      ? 0
-      : shots.map((s) => s.releaseAngle).reduce((a, b) => a + b) / total;
-}
-
-class Shot {
-  Shot({
-    required this.shotId,
-    required this.made,
-    required this.releaseAngle,
-    required this.releaseHeight,
-    required this.shotDistance,
-  });
-
-  final int shotId;
-  final bool made;
-  final double releaseAngle; // degrees
-  final double releaseHeight; // meters (unused in calc but available)
-  final double shotDistance; // meters
-
-  factory Shot.fromJson(Map<String, dynamic> json) {
-    return Shot(
-      shotId: (json['shotId'] as num).toInt(),
-      made: json['made'] as bool,
-      releaseAngle: (json['releaseAngle'] as num).toDouble(),
-      releaseHeight: (json['releaseHeight'] as num).toDouble(),
-      shotDistance: (json['shotDistance'] as num).toDouble(),
-    );
-  }
-}
-
-
-class _StatsRow extends StatelessWidget {
-  const _StatsRow({required this.summary});
-
-  final ShotSummary summary;
-
-  @override
-  Widget build(BuildContext context) {
-    final ratePct = (summary.successRate * 100).toStringAsFixed(1);
-    final avgAngle = summary.averageAngle.toStringAsFixed(1);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          )
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _StatTile(title: 'シュート成功率', value: '$ratePct%'),
-          _StatTile(title: 'シュート平均角度', value: '$avgAngle°'),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatTile extends StatelessWidget {
-  const _StatTile({required this.title, required this.value});
-
-  final String title;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: Colors.grey.shade700),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-      ],
-    );
-  }
-}
 
 class _LegendDot extends StatelessWidget {
   const _LegendDot({required this.color, required this.label});

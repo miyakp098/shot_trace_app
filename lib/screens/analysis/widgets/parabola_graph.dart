@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import '../analysis_result_screen.dart';
+import 'package:shot_trace_app/models/shot.dart';
 
 class ParabolaGraph extends StatelessWidget {
   final List<Shot> shots;
