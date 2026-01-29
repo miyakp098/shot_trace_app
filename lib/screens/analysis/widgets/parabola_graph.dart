@@ -22,9 +22,7 @@ class ParabolaGraph extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.grey.shade300),
               ),
-              child: CustomPaint(
-                painter: _ParabolaPainter(shots),
-              ),
+              child: CustomPaint(painter: _ParabolaPainter(shots)),
             ),
           ),
         );
@@ -54,26 +52,52 @@ class _ParabolaPainter extends CustomPainter {
     final axisPaint = Paint()
       ..color = Colors.grey.shade700
       ..strokeWidth = 2;
-    canvas.drawLine(Offset(left, groundY), Offset(size.width - right, groundY), axisPaint);
+    canvas.drawLine(
+      Offset(left, groundY),
+      Offset(size.width - right, groundY),
+      axisPaint,
+    );
     canvas.drawLine(Offset(left, groundY), Offset(left, top), axisPaint);
 
     final bgPaint = Paint()
       ..color = Colors.grey.shade300
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
-    canvas.drawLine(Offset(left, groundY), Offset(size.width - right, groundY), bgPaint);
+    canvas.drawLine(
+      Offset(left, groundY),
+      Offset(size.width - right, groundY),
+      bgPaint,
+    );
 
     final gridPaint = Paint()
       ..color = Colors.grey.shade300
       ..strokeWidth = 1;
     for (int m = 1; m < maxH; m++) {
       final y = groundY - m * ky;
-      canvas.drawLine(Offset(left, y), Offset(size.width - right, y), gridPaint);
+      canvas.drawLine(
+        Offset(left, y),
+        Offset(size.width - right, y),
+        gridPaint,
+      );
     }
     for (int m = 1; m < fixedMaxD; m++) {
       final x = left + m * kx;
       canvas.drawLine(Offset(x, groundY), Offset(x, top), gridPaint);
     }
+
+    // 横軸8m、縦軸3.05mの位置に円を描画
+    final double plotX = left + 8.0 * kx;
+    final double plotY = groundY - 3.05 * ky;
+    final Paint plotPaint = Paint()
+      ..color = Colors.blue
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(plotX, plotY), 7, plotPaint);
+    // 円の縁取り
+    final Paint borderPaint = Paint()
+      ..color = Colors.blue.shade900
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    canvas.drawCircle(Offset(plotX, plotY), 7, borderPaint);
 
     final tickPaint = Paint()
       ..color = Colors.grey.shade500
