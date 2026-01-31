@@ -85,19 +85,20 @@ class _ParabolaPainter extends CustomPainter {
       canvas.drawLine(Offset(x, groundY), Offset(x, top), gridPaint);
     }
 
-    // 横軸8m、縦軸3.05mの位置に円を描画
+    // 横軸8m、縦軸3.05mの位置に円を描画（目印として残す場合はこのまま）
     final double plotX = left + 8.0 * kx;
     final double plotY = groundY - 3.05 * ky;
     final Paint plotPaint = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(plotX, plotY), 7, plotPaint);
-    // 円の縁取り
     final Paint borderPaint = Paint()
       ..color = Colors.blue.shade900
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
     canvas.drawCircle(Offset(plotX, plotY), 7, borderPaint);
+
+    // リリースポイントの円描画は削除
 
     final tickPaint = Paint()
       ..color = Colors.grey.shade500
@@ -126,19 +127,28 @@ class _ParabolaPainter extends CustomPainter {
 
     for (final s in shots) {
       final path = Path();
-      final d = s.shotDistance > fixedMaxD ? fixedMaxD : s.shotDistance;
-      final h = _peakHeightFor(s);
       final color = s.made ? Colors.green : Colors.red;
       final p = Paint()
         ..color = color
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0;
       const samples = 60;
+      // リリース・ゴール座標
+      final rx = left + s.releasePosition.x * kx;
+      final ry = groundY - s.releasePosition.y * ky;
+      final ex = left + s.endPosition.x * kx;
+      final ey = groundY - s.endPosition.y * ky;
+      // 放物線の高さ（releaseHeightとゴール高さの中間+αで近似）
+      final peakY = math.min(ry, ey) - 2.0 * ky;
       for (int i = 0; i <= samples; i++) {
-        final x = d * (i / samples);
-        final y = 4 * h * (x / d) * (1 - (x / d));
-        final px = left + x * kx;
-        final py = groundY - y * ky;
+        final t = i / samples;
+        // 2次ベジェで近似
+        final px =
+            (1 - t) * (1 - t) * rx +
+            2 * (1 - t) * t * ((rx + ex) / 2) +
+            t * t * ex;
+        final py =
+            (1 - t) * (1 - t) * ry + 2 * (1 - t) * t * peakY + t * t * ey;
         if (i == 0) {
           path.moveTo(px, py);
         } else {
@@ -149,11 +159,7 @@ class _ParabolaPainter extends CustomPainter {
     }
   }
 
-  double _peakHeightFor(Shot s) {
-    final angRad = s.releaseAngle * math.pi / 180.0;
-    const coeff = 0.25;
-    return coeff * s.shotDistance * math.sin(angRad).clamp(0.0, 1.0);
-  }
+  // Peak height computation via shotDistance is no longer used.
 
   @override
   bool shouldRepaint(covariant _ParabolaPainter oldDelegate) {

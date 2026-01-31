@@ -20,14 +20,16 @@ class Shot {
     required this.made,
     required this.releaseAngle,
     required this.releaseHeight,
-    required this.shotDistance,
+    required this.releasePosition,
+    required this.endPosition,
   });
 
   final int shotId;
   final bool made;
   final double releaseAngle; // degrees
   final double releaseHeight; // meters
-  final double shotDistance; // meters
+  final ReleasePosition releasePosition;
+  final ReleasePosition endPosition;
 
   factory Shot.fromJson(Map<String, dynamic> json) {
     return Shot(
@@ -35,7 +37,25 @@ class Shot {
       made: json['made'] as bool,
       releaseAngle: (json['releaseAngle'] as num).toDouble(),
       releaseHeight: (json['releaseHeight'] as num).toDouble(),
-      shotDistance: (json['shotDistance'] as num).toDouble(),
+      releasePosition: ReleasePosition.fromJson(
+        json['releasePosition'] as Map<String, dynamic>,
+      ),
+      endPosition: ReleasePosition.fromJson(
+        json['endPosition'] as Map<String, dynamic>,
+      ),
+    );
+  }
+}
+
+class ReleasePosition {
+  final double x;
+  final double y;
+  ReleasePosition({required this.x, required this.y});
+
+  factory ReleasePosition.fromJson(Map<String, dynamic> json) {
+    return ReleasePosition(
+      x: (json['x'] as num).toDouble(),
+      y: (json['y'] as num).toDouble(),
     );
   }
 }
