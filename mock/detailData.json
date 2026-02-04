@@ -8,8 +8,8 @@
       "shotId": 1,
       "timestamp": "00:00:12.340",
       "made": true,
-      "releaseAngle": 50.0,
-      "releaseHeight": 3.0,
+      "releaseAngle": 60.0,
+      "peakHeight": 3.6,
       "entryAngle": 43.5,
       "releasePosition": { "x": 2.2, "y": 2.0 },
       "endPosition": { "x": 8.0, "y": 3.05 }
@@ -19,27 +19,27 @@
       "timestamp": "00:00:21.880",
       "made": false,
       "releaseAngle": 50.0,
-      "releaseHeight": 3.0,
+      "peakHeight": 3.8,
       "entryAngle": 32.1,
       "releasePosition": { "x": 2.5, "y": 2.0 },
-      "endPosition": { "x": 8.0, "y": 3.05 }
+      "endPosition": { "x": 8.2, "y": 3.05 }
     },
     {
       "shotId": 3,
       "timestamp": "00:00:30.450",
       "made": true,
       "releaseAngle": 50.0,
-      "releaseHeight": 3.0,
+      "peakHeight": 3.6,
       "entryAngle": 45.2,
       "releasePosition": { "x": 2.8, "y": 2.0 },
-      "endPosition": { "x": 8.0, "y": 3.05 }
+      "endPosition": { "x": 7.8, "y": 3.05 }
     },
     {
       "shotId": 4,
       "timestamp": "00:00:39.920",
       "made": true,
       "releaseAngle": 50.0,
-      "releaseHeight": 3.0,
+      "peakHeight": 4.4,
       "entryAngle": 41.8,
       "releasePosition": { "x": 3.0, "y": 2.0 },
       "endPosition": { "x": 8.0, "y": 3.05 }
@@ -49,57 +49,57 @@
       "timestamp": "00:00:49.610",
       "made": false,
       "releaseAngle": 50.0,
-      "releaseHeight": 4.0,
+      "peakHeight": 4.0,
       "entryAngle": 29.6,
       "releasePosition": { "x": 3.3, "y": 2.0 },
-      "endPosition": { "x": 8.0, "y": 3.05 }
+      "endPosition": { "x": 8.3, "y": 3.05 }
     },
     {
       "shotId": 6,
       "timestamp": "00:00:58.730",
       "made": true,
       "releaseAngle": 50.0,
-      "releaseHeight": 3.9,
+      "peakHeight": 3.9,
       "entryAngle": 47.9,
       "releasePosition": { "x": 3.4, "y": 2.0 },
-      "endPosition": { "x": 8.0, "y": 3.05 }
+      "endPosition": { "x": 8.1, "y": 3.05 }
     },
     {
       "shotId": 7,
       "timestamp": "00:01:07.150",
       "made": false,
       "releaseAngle": 50.0,
-      "releaseHeight": 3.0,
+      "peakHeight": 4.5,
       "entryAngle": 35.4,
       "releasePosition": { "x": 2.9, "y": 2.0 },
-      "endPosition": { "x": 8.0, "y": 3.05 }
+      "endPosition": { "x": 8.3, "y": 3.05 }
     },
     {
       "shotId": 8,
       "timestamp": "00:01:16.900",
-      "made": true,
+      "made": false,
       "releaseAngle": 50.0,
-      "releaseHeight": 3.0,
+      "peakHeight": 4.3,
       "entryAngle": 44.1,
       "releasePosition": { "x": 2.4, "y": 2.0 },
-      "endPosition": { "x": 8.0, "y": 3.05 }
+      "endPosition": { "x": 7.7, "y": 3.05 }
     },
     {
       "shotId": 9,
       "timestamp": "00:01:26.420",
-      "made": false,
+      "made": true,
       "releaseAngle": 50.0,
-      "releaseHeight": 3.0,
+      "peakHeight": 4.0,
       "entryAngle": 27.9,
       "releasePosition": { "x": 2.7, "y": 2.0 },
-      "endPosition": { "x": 8.0, "y": 3.05 }
+      "endPosition": { "x": 7.9, "y": 3.05 }
     },
     {
       "shotId": 10,
       "timestamp": "00:01:35.780",
       "made": true,
       "releaseAngle": 50.0,
-      "releaseHeight": 3.0,
+      "peakHeight": 4.3,
       "entryAngle": 46.3,
       "releasePosition": { "x": 2.6, "y": 2.0 },
       "endPosition": { "x": 8.0, "y": 3.05 }

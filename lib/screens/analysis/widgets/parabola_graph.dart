@@ -40,72 +40,43 @@ class _ParabolaPainter extends CustomPainter {
     const left = 24.0;
     const right = 12.0;
     const top = 16.0;
-    const fixedMaxD = 9.0;
-    const fixedMaxH = 9.0;
+    const bottom = 24.0;
+    const fixedMaxD = 9.0; // x軸は1〜9m表示
+    const fixedMaxH = 6.0; // y軸は0〜6m表示
     final maxH = fixedMaxH;
-    final groundY = size.height - 24;
     final widthUsable = size.width - left - right;
-    final heightUsable = groundY - top;
-    final kx = widthUsable / fixedMaxD;
-    final ky = heightUsable / (maxH == 0 ? 1 : maxH);
+    final heightUsable = size.height - top - bottom;
+    // 1mあたりのピクセルをx/y同一にする
+    final k = math.min(widthUsable / fixedMaxD, heightUsable / maxH);
+    final kx = k;
+    final ky = k;
+    // グラフ領域を中央に揃える原点（左下）
+    final xOrigin = left + (widthUsable - fixedMaxD * k) / 2.0;
+    final groundY = top + (heightUsable - maxH * k) / 2.0 + maxH * k;
 
     final axisPaint = Paint()
       ..color = Colors.grey.shade700
       ..strokeWidth = 2;
+    // X軸（地面）とY軸を同一スケールで描画
     canvas.drawLine(
-      Offset(left, groundY),
-      Offset(size.width - right, groundY),
+      Offset(xOrigin, groundY),
+      Offset(xOrigin + fixedMaxD * k, groundY),
       axisPaint,
     );
-    canvas.drawLine(Offset(left, groundY), Offset(left, top), axisPaint);
-
-    final bgPaint = Paint()
-      ..color = Colors.grey.shade300
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
     canvas.drawLine(
-      Offset(left, groundY),
-      Offset(size.width - right, groundY),
-      bgPaint,
+      Offset(xOrigin, groundY),
+      Offset(xOrigin, groundY - maxH * k),
+      axisPaint,
     );
-
-    final gridPaint = Paint()
-      ..color = Colors.grey.shade300
-      ..strokeWidth = 1;
-    for (int m = 1; m < maxH; m++) {
-      final y = groundY - m * ky;
-      canvas.drawLine(
-        Offset(left, y),
-        Offset(size.width - right, y),
-        gridPaint,
-      );
-    }
-    for (int m = 1; m < fixedMaxD; m++) {
-      final x = left + m * kx;
-      canvas.drawLine(Offset(x, groundY), Offset(x, top), gridPaint);
-    }
-
-    // 横軸8m、縦軸3.05mの位置に円を描画（目印として残す場合はこのまま）
-    final double plotX = left + 8.0 * kx;
-    final double plotY = groundY - 3.05 * ky;
-    final Paint plotPaint = Paint()
-      ..color = Colors.blue
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(plotX, plotY), 7, plotPaint);
-    final Paint borderPaint = Paint()
-      ..color = Colors.blue.shade900
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    canvas.drawCircle(Offset(plotX, plotY), 7, borderPaint);
-
     // リリースポイントの円描画は削除
 
     final tickPaint = Paint()
       ..color = Colors.grey.shade500
       ..strokeWidth = 1;
     final textStyle = TextStyle(color: Colors.grey[700], fontSize: 10);
-    for (int m = 0; m <= fixedMaxD; m++) {
-      final x = left + m * kx;
+    // x目盛は1〜9表示（0は表示しない）
+    for (int m = 1; m <= fixedMaxD; m++) {
+      final x = xOrigin + m * kx;
       canvas.drawLine(Offset(x, groundY), Offset(x, groundY + 6), tickPaint);
       final tp = TextPainter(
         text: TextSpan(text: '$m', style: textStyle),
@@ -113,18 +84,20 @@ class _ParabolaPainter extends CustomPainter {
       )..layout();
       tp.paint(canvas, Offset(x - tp.width / 2, groundY + 8));
     }
+    // y目盛は1〜6表示
     for (int m = 1; m <= maxH; m++) {
       final y = groundY - m * ky;
-      canvas.drawLine(Offset(left - 6, y), Offset(left, y), tickPaint);
+      canvas.drawLine(Offset(xOrigin - 6, y), Offset(xOrigin, y), tickPaint);
       final tp = TextPainter(
         text: TextSpan(text: '$m', style: textStyle),
         textDirection: TextDirection.ltr,
       )..layout();
-      tp.paint(canvas, Offset(left - tp.width - 10, y - tp.height / 2));
+      tp.paint(canvas, Offset(xOrigin - tp.width - 10, y - tp.height / 2));
     }
 
     if (shots.isEmpty) return;
 
+    // 二次関数 y = a(x - xv)^2 + hv でピーク高さを厳密に反映して描画
     for (final s in shots) {
       final path = Path();
       final color = s.made ? Colors.green : Colors.red;
@@ -132,23 +105,37 @@ class _ParabolaPainter extends CustomPainter {
         ..color = color
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0;
-      const samples = 60;
-      // リリース・ゴール座標
-      final rx = left + s.releasePosition.x * kx;
-      final ry = groundY - s.releasePosition.y * ky;
-      final ex = left + s.endPosition.x * kx;
-      final ey = groundY - s.endPosition.y * ky;
-      // 放物線の高さ（releaseHeightとゴール高さの中間+αで近似）
-      final peakY = math.min(ry, ey) - 2.0 * ky;
+      const samples = 80;
+
+      // メートル座標系での始点・終点・頂点高さ
+      final double x0 = s.releasePosition.x;
+      final double y0 = s.releasePosition.y;
+      final double x2 = s.endPosition.x;
+      final double y2 = s.endPosition.y;
+      double hv = s.peakHeight;
+      final double yminReq = math.max(y0, y2) + 1e-6;
+      if (hv <= yminReq) {
+        hv = yminReq + 0.1; // 頂点が始終点より上に来るよう僅かに調整
+      }
+
+      // 頂点x座標xvを解く（頂点が必ず区間内に来るよう距離の和で解く）
+      // d0 = |x0 - xv|, d2 = |x2 - xv|, d0/d2 = r, かつ d0 + d2 = |x2 - x0|
+      // r = sqrt((y0 - hv)/(y2 - hv)) (>0) として、xv = (xL + r*xR)/(1+r) の形で区間内に配置
+      final double ratio = (y0 - hv) / (y2 - hv);
+      final double r = ratio > 0 ? math.sqrt(ratio.abs()) : 1.0;
+      double xv;
+      if (x0 <= x2) {
+        xv = (x0 + r * x2) / (1.0 + r);
+      } else {
+        xv = (x2 + r * x0) / (1.0 + r);
+      }
+      final double a = (y0 - hv) / ((x0 - xv) * (x0 - xv));
+
       for (int i = 0; i <= samples; i++) {
-        final t = i / samples;
-        // 2次ベジェで近似
-        final px =
-            (1 - t) * (1 - t) * rx +
-            2 * (1 - t) * t * ((rx + ex) / 2) +
-            t * t * ex;
-        final py =
-            (1 - t) * (1 - t) * ry + 2 * (1 - t) * t * peakY + t * t * ey;
+        final double xm = x0 + (x2 - x0) * (i / samples);
+        final double ym = a * (xm - xv) * (xm - xv) + hv;
+        final double px = xOrigin + xm * kx;
+        final double py = groundY - ym * ky;
         if (i == 0) {
           path.moveTo(px, py);
         } else {

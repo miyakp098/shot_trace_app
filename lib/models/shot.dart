@@ -19,7 +19,7 @@ class Shot {
     required this.shotId,
     required this.made,
     required this.releaseAngle,
-    required this.releaseHeight,
+    required this.peakHeight,
     required this.releasePosition,
     required this.endPosition,
   });
@@ -27,16 +27,25 @@ class Shot {
   final int shotId;
   final bool made;
   final double releaseAngle; // degrees
-  final double releaseHeight; // meters
+  final double peakHeight; // meters (trajectory apex absolute height)
   final ReleasePosition releasePosition;
   final ReleasePosition endPosition;
 
   factory Shot.fromJson(Map<String, dynamic> json) {
+    // Accept both `peakHeight` and legacy `releaseHeight`, and handle num/string safely
+    final dynamic peakRaw = json['peakHeight'] ?? json['releaseHeight'];
+    double peak = 0.0;
+    if (peakRaw is num) {
+      peak = peakRaw.toDouble();
+    } else if (peakRaw is String) {
+      peak = double.tryParse(peakRaw) ?? 0.0;
+    }
+
     return Shot(
       shotId: (json['shotId'] as num).toInt(),
       made: json['made'] as bool,
       releaseAngle: (json['releaseAngle'] as num).toDouble(),
-      releaseHeight: (json['releaseHeight'] as num).toDouble(),
+      peakHeight: peak,
       releasePosition: ReleasePosition.fromJson(
         json['releasePosition'] as Map<String, dynamic>,
       ),
