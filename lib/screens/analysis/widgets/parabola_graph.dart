@@ -2,29 +2,136 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shot_trace_app/models/shot.dart';
 
-class ParabolaGraph extends StatelessWidget {
+class ParabolaGraph extends StatefulWidget {
   final List<Shot> shots;
   const ParabolaGraph({super.key, required this.shots});
+
+  @override
+  State<ParabolaGraph> createState() => _ParabolaGraphState();
+}
+
+class _ParabolaGraphState extends State<ParabolaGraph> {
+  int? selectedShotId;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final side = math.min(constraints.maxWidth, constraints.maxHeight);
-        return Align(
-          alignment: Alignment.topCenter,
-          child: SizedBox(
-            width: side,
-            height: side,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
+        const double minGraphSize = 180.0;
+        final double maxHeight = constraints.hasBoundedHeight
+            ? constraints.maxHeight * 0.6
+            : constraints.maxWidth;
+        final double desired = math.max(
+          minGraphSize,
+          math.min(constraints.maxWidth, maxHeight),
+        );
+        final double side = math.min(desired, constraints.maxWidth);
+        return Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            SizedBox(
+              width: side,
+              height: side,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: CustomPaint(
+                  painter: _ParabolaPainter(
+                    widget.shots,
+                    highlightedId: selectedShotId,
+                  ),
+                ),
               ),
-              child: CustomPaint(painter: _ParabolaPainter(shots)),
             ),
-          ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                itemBuilder: (context, index) {
+                  final s = widget.shots[index];
+                  final isSelected = s.shotId == selectedShotId;
+                  return GestureDetector(
+                    onTap: () => setState(() => selectedShotId = s.shotId),
+                    child: AnimatedContainer(
+                      width: double.infinity,
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.blue.shade50 : Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isSelected
+                              ? Colors.blue
+                              : Colors.grey.shade300,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: Colors.blue.withOpacity(0.12),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 6,
+                              horizontal: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Colors.blue.withOpacity(0.12)
+                                  : Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'ID ${s.shotId}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Peak ${s.peakHeight.toStringAsFixed(1)}m',
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'From (${s.releasePosition.x.toStringAsFixed(1)}, ${s.releasePosition.y.toStringAsFixed(1)}) → (${s.endPosition.x.toStringAsFixed(1)}, ${s.endPosition.y.toStringAsFixed(1)})',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemCount: widget.shots.length,
+              ),
+            ),
+          ],
         );
       },
     );
@@ -32,8 +139,9 @@ class ParabolaGraph extends StatelessWidget {
 }
 
 class _ParabolaPainter extends CustomPainter {
-  _ParabolaPainter(this.shots);
+  _ParabolaPainter(this.shots, {this.highlightedId});
   final List<Shot> shots;
+  final int? highlightedId;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -100,11 +208,15 @@ class _ParabolaPainter extends CustomPainter {
     // 二次関数 y = a(x - xv)^2 + hv でピーク高さを厳密に反映して描画
     for (final s in shots) {
       final path = Path();
-      final color = s.made ? Colors.green : Colors.red;
+      final bool isHighlight =
+          highlightedId == null || s.shotId == highlightedId;
+      final baseColor = s.made ? Colors.green : Colors.red;
+      final color = isHighlight ? baseColor : baseColor.withOpacity(0.25);
+      final stroke = isHighlight ? 3.0 : 1.5;
       final p = Paint()
         ..color = color
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0;
+        ..strokeWidth = stroke;
       const samples = 80;
 
       // メートル座標系での始点・終点・頂点高さ
@@ -150,6 +262,7 @@ class _ParabolaPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ParabolaPainter oldDelegate) {
-    return !identical(oldDelegate.shots, shots);
+    return !identical(oldDelegate.shots, shots) ||
+        oldDelegate.highlightedId != highlightedId;
   }
 }
